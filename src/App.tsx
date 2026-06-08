@@ -208,8 +208,7 @@ const renderStyledText = (text: string) => {
 
 export default function App() {
   // Navigation & Core States
-  const [isStarted, setIsStarted] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"book" | "game">("book");
+  const [activeTab, setActiveTab ] = useState<"book" | "game">("book");
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [showZhtStory, setShowZhtStory] = useState<{ [key: number]: boolean }>({});
   
@@ -362,7 +361,6 @@ export default function App() {
     setQuizScore({});
     setShowZhtStory({});
     setActiveVocab(null);
-    setIsStarted(false);
     setHasReviewedVocab(false);
     setLadderSteps([0, 0, 0, 0]);
     setLadderQuestionIndex([0, 0, 0, 0]);
@@ -566,115 +564,57 @@ export default function App() {
         ))}
       </div>
 
-      {!isStarted ? (
-        /* Welcome Cover Page (FREE OF ANY CHINESE DESCRIPTION OR TITLE TEXT) */
-        <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[90vh] text-center px-4 relative">
-          
-          <motion.div 
-            initial={{ opacity: 0, y: -25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-4 mb-8"
-          >
-            {/* Pure English title card styling - Cute & Delicate */}
-            <h1 className="text-6xl md:text-8xl font-cute font-black text-amber-500 drop-shadow-[0_5px_8px_rgba(245,158,11,0.3)] tracking-tight leading-none animate-pulse">
-              Wizard and Cat 4
-            </h1>
-            <p className="text-2xl md:text-3xl text-orange-500 font-cute font-bold tracking-widest flex items-center justify-center gap-1.5 mt-2">
-              ✨ The Best Royal Wizard Ever ✨
-            </p>
-            <div className="w-40 h-2.5 bg-gradient-to-r from-orange-400 via-amber-400 to-emerald-400 mx-auto rounded-full mt-4" />
-          </motion.div>
+      {/* Core Book Reading & Game Suite */}
+      <div className="max-w-7xl mx-auto space-y-6">
 
-          {/* Floating Cover Artwork */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="relative w-full max-w-2xl aspect-[16/9] rounded-[32px] overflow-hidden shadow-2xl border-4 border-[#E0F2FE] bg-white mb-10"
-          >
-            <img 
-              src="/src/assets/images/wizard_cat_cover_1780926471746.png" 
-              alt="Wizard and Cat" 
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute top-4 left-4 bg-orange-500 text-white font-black px-4 py-1.5 rounded-full text-sm shadow-md animate-bounce">
-              Level 3 🌟
-            </div>
-            <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-lg text-xs font-mono select-none">
-              AI Studio Readout Engine
-            </div>
-          </motion.div>
-
-          {/* Clean English Launch Button */}
-          <motion.button
-            id="start-adventure-btn"
-            onClick={() => {
-              setIsStarted(true);
-              soundEffects.playCorrectAnswer();
-            }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-12 py-5 bg-gradient-to-r from-orange-500 via-amber-500 to-emerald-500 hover:from-orange-600 hover:to-emerald-600 text-white font-display text-2xl font-black rounded-full shadow-2xl hover:shadow-orange-200 border-4 border-white cursor-pointer transform transition-all group"
-          >
-            <span className="flex items-center gap-3">
-              START ADVENTURE 🚀
-              <ChevronRight className="w-8 h-8 group-hover:translate-x-1.5 transition-transform" />
+        {/* APP SWITCHING NAVIGATION TAB HEADERS (Story Book vs. Magical Games) */}
+        <div className="bg-white rounded-3xl p-3 shadow-md border-2 border-[#E0F2FE] flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-3xl animate-pulse">🧙‍♂️</span>
+            <span className="font-cute font-black text-orange-500 text-sm sm:text-lg md:text-xl tracking-tight">
+              Wizard and Cat 12: The Best Royal Wizard Ever
             </span>
-          </motion.button>
-
-        </div>
-      ) : (
-        /* Core Book Reading & Game Suite */
-        <div className="max-w-7xl mx-auto space-y-6">
-
-          {/* APP SWITCHING NAVIGATION TAB HEADERS (Story Book vs. Magical Games) */}
-          <div className="bg-white rounded-3xl p-3 shadow-md border-2 border-[#E0F2FE] flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-3xl">🪄</span>
-              <span className="font-display font-black text-slate-800 text-lg hidden sm:inline">皇家英語遊樂場</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => {
-                  setActiveTab("book");
-                  soundEffects.playPageFlip();
-                }}
-                className={`px-6 py-2.5 rounded-2xl font-bold flex items-center gap-2 transition-all duration-300 cursor-pointer ${
-                  activeTab === "book"
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                    : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                }`}
-              >
-                <BookOpen className="w-5 h-5" />
-                <span>📖 閱讀互動繪本</span>
-              </button>
-              
-              <button
-                onClick={() => {
-                  setActiveTab("game");
-                  soundEffects.playPageFlip();
-                }}
-                className={`px-6 py-2.5 rounded-2xl font-bold flex items-center gap-2 transition-all duration-300 cursor-pointer ${
-                  activeTab === "game"
-                    ? "bg-amber-500 text-white shadow-md shadow-amber-100"
-                    : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                }`}
-              >
-                <Trophy className="w-5 h-5 animate-bounce" />
-                <span>🎮 英語魔法遊戲中心</span>
-              </button>
-            </div>
-            <div>
-              <button 
-                onClick={handleReset}
-                className="text-xs bg-slate-100 hover:bg-red-50 hover:text-red-600 font-extrabold px-3 py-2 rounded-xl transition-colors cursor-pointer border border-transparent"
-              >
-                回封面 🏠
-              </button>
-            </div>
           </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setActiveTab("book");
+                soundEffects.playPageFlip();
+              }}
+              className={`px-6 py-2.5 rounded-2xl font-bold flex items-center gap-2 transition-all duration-300 cursor-pointer ${
+                activeTab === "book"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                  : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <BookOpen className="w-5 h-5" />
+              <span>📖 閱讀互動繪本</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                setActiveTab("game");
+                soundEffects.playPageFlip();
+              }}
+              className={`px-6 py-2.5 rounded-2xl font-bold flex items-center gap-2 transition-all duration-300 cursor-pointer ${
+                activeTab === "game"
+                  ? "bg-amber-500 text-white shadow-md shadow-amber-100"
+                  : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <Trophy className="w-5 h-5 animate-bounce" />
+              <span>🎮 英語魔法遊戲中心</span>
+            </button>
+          </div>
+          <div>
+            <button 
+              onClick={handleReset}
+              className="text-xs bg-slate-100 hover:bg-red-50 hover:text-red-600 font-extrabold px-3 py-2 rounded-xl transition-colors cursor-pointer border border-transparent"
+            >
+              重新開始 🏠
+            </button>
+          </div>
+        </div>
 
           {activeTab === "book" ? (
             /* ================= READING MODE VIEW ================= */
@@ -1499,7 +1439,6 @@ export default function App() {
           </AnimatePresence>
 
         </div>
-      )}
 
       {/* Humble Footer */}
       <footer className="mt-16 text-center select-none py-6 border-t border-slate-100 max-w-4xl mx-auto">
