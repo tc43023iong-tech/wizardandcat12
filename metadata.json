@@ -1,0 +1,6 @@
+{
+  "name": "Wizard and Cat English Reader",
+  "description": "An interactive, adorable English learning reader of Wizard and Cat: Helping Princess Mary 4 for grade 3 students.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
