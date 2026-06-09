@@ -240,6 +240,7 @@ export default function App() {
     { name: "Princess 👸", emoji: "👸", color: "bg-pink-500", ringColor: "ring-pink-100" },
     { name: "Crocodile 🐊", emoji: "🐊", color: "bg-emerald-500", ringColor: "ring-emerald-100" }
   ];
+  const [ladderPlayerCount, setLadderPlayerCount] = useState<number>(4); // default 4-players mode
   const [ladderSteps, setLadderSteps] = useState<number[]>([0, 0, 0, 0]); // positions on ladder (0 to 10)
   const [ladderQuestionIndex, setLadderQuestionIndex] = useState<number[]>([0, 0, 0, 0]); // how many questions asked (up to 10)
   const [ladderGameCompleted, setLadderGameCompleted] = useState<boolean>(false);
@@ -515,13 +516,13 @@ export default function App() {
     setLadderSteps(updatedSteps);
     setLadderQuestionIndex(updatedQuestions);
 
-    // Check if ALL participants are finished
-    const isAllFinished = updatedQuestions.every((qCount, pIdx) => qCount === 10 || updatedSteps[pIdx] === 10);
+    // Check if ALL active participants are finished
+    const isAllFinished = updatedQuestions.slice(0, ladderPlayerCount).every((qCount, pIdx) => qCount === 10 || updatedSteps[pIdx] === 10);
 
     if (isAllFinished) {
       setLadderGameCompleted(true);
       // Construct final ranking results
-      const results = ladderPlayers.map((player, idx) => ({
+      const results = ladderPlayers.slice(0, ladderPlayerCount).map((player, idx) => ({
         name: player.name,
         emoji: player.emoji,
         score: updatedSteps[idx]
@@ -738,18 +739,14 @@ export default function App() {
                     {/* Tiny castle watermark inside card */}
                     <div className="absolute right-4 bottom-4 text-9xl opacity-5 pointer-events-none select-none">🏰</div>
 
-                    {/* Section Title with PURE ENGLISH (Chinese Translation for title completely removed) */}
-                    <div className="border-b border-dashed border-slate-100 pb-4 mb-4 flex items-center justify-between">
-                      <div>
-                        <h2 className="text-3xl font-display font-black text-blue-900 leading-tight">
-                          {currentPage + 1}. {currentSection.titleEng}
-                        </h2>
-                      </div>
-
-                      {/* Scene Emoji Art Badge */}
-                      <div className="bg-amber-50 px-3 py-1.5 rounded-2xl border border-amber-200 text-lg font-mono flex items-center gap-1 select-none" title="本頁冒險場景">
-                        {currentSection.sceneEmoji}
-                      </div>
+                    {/* Section Title with Emojis replacing the English Subtitle */}
+                    <div className="border-b border-dashed border-slate-100 pb-4 mb-4 flex items-center">
+                      <h2 className="text-3xl font-display font-black text-blue-900 leading-tight flex items-center gap-3">
+                        <span className="bg-blue-100 text-blue-700 px-4 py-1 rounded-2xl text-xl font-mono">
+                          {currentPage + 1}
+                        </span>
+                        <span className="text-2xl select-none tracking-wider">{currentSection.sceneEmoji}</span>
+                      </h2>
                     </div>
 
                     {/* Main Story Paragraphs containing Orange Clickable Vocabulary words with inline parentheses */}
@@ -1058,7 +1055,7 @@ export default function App() {
                   </div>
                 </div>
               ) : (
-                /* STEP 2: ACTIVE GAME CENTER WITH 4-PLAYER SYNCHRONOUS LADDERS */
+                /* STEP 2: ACTIVE GAME CENTER WITH SYNCHRONOUS LADDERS */
                 <div className="space-y-6">
                   
                   {/* Header info badge and stats */}
@@ -1067,14 +1064,24 @@ export default function App() {
                       <span className="text-4xl animate-bounce">🧗</span>
                       <div className="text-left">
                         <h3 className="text-xl md:text-2xl font-cute font-bold text-slate-800 leading-tight">
-                          四人魔法爬爬梯同步大挑戰 (4-Player Synchronous Rope Challenge)
+                          {ladderPlayerCount === 1 
+                            ? "單人魔法爬爬梯大挑戰 (1-Player Rope Challenge)" 
+                            : ladderPlayerCount === 2 
+                              ? "雙人魔法爬爬梯同步挑戰 (2-Player Synchronous Rope Challenge)" 
+                              : "四人魔法爬爬梯同步大挑戰 (4-Player Synchronous Rope Challenge)"
+                          }
                         </h3>
                         <p className="text-slate-500 text-xs font-sans mt-0.5">
-                          中英對照題！四位玩家同時答題向上攀爬！看誰最快爬到最頂樓 (Floor 10) 吧！
+                          {ladderPlayerCount === 1 
+                            ? "中英對照題！挑戰自己向上攀爬！看你能否順利攀爬到最頂樓 (Floor 10) 吧！" 
+                            : ladderPlayerCount === 2 
+                              ? "中英對照題！兩位玩家同時答題向上攀爬！看誰最快爬到最頂樓 (Floor 10) 吧！" 
+                              : "中英對照題！四位玩家同時答題向上攀爬！看誰最快爬到最頂樓 (Floor 10) 吧！"
+                          }
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 shrink-0">
                       <button
                         onClick={() => {
                           setLadderSteps([0, 0, 0, 0]);
@@ -1096,129 +1103,378 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* LADDERS CONTAINER WITH INTEGRATED INDEPENDENT ANSWER CONTROLS */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-[32px] border border-slate-100">
-                    {ladderPlayers.map((player, pIdx) => {
-                      const hasFinished = ladderSteps[pIdx] === 10 || ladderQuestionIndex[pIdx] === 10;
-                      const activeQuiz = activeLadderQuizzes[pIdx];
-                      
-                      return (
-                        <div 
-                          key={player.name} 
-                          className={`flex flex-col justify-between items-center bg-white p-4 rounded-3xl border-2 transition-all min-h-[580px] shadow-sm relative ${
-                            hasFinished 
-                              ? "border-emerald-200 bg-emerald-50/10" 
-                              : "border-slate-100 hover:border-purple-200"
+                  {/* Dynamic Mode Selection Subbar */}
+                  <div className="p-4 bg-purple-50 rounded-[24px] border border-purple-100 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg animate-pulse">⚙️</span>
+                      <span className="text-sm font-cute font-bold text-slate-700">選擇遊戲模式 (Select Mode)：</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 4].map(num => (
+                        <button
+                          key={num}
+                          onClick={() => {
+                            setLadderPlayerCount(num);
+                            setLadderSteps([0, 0, 0, 0]);
+                            setLadderQuestionIndex([0, 0, 0, 0]);
+                            setLadderGameCompleted(false);
+                            setLadderResults([]);
+                            soundEffects.playMagicChime();
+                          }}
+                          className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+                            ladderPlayerCount === num
+                              ? "bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-200 scale-105"
+                              : "bg-white text-slate-600 hover:bg-purple-100 border-slate-200 hover:border-purple-200"
                           }`}
                         >
-                          
-                          {/* Top finished check banner */}
-                          <div className="text-center w-full">
-                            <span className="text-xs bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                              Player {pIdx + 1}
-                            </span>
-                            <div className="flex items-center justify-center gap-1 mt-1.5">
-                              <span className="text-xl select-none">{player.emoji}</span>
-                              <span className="text-base font-black text-slate-800">{player.name}</span>
-                            </div>
-                            <span className="text-xs font-mono text-slate-400 mt-1 block">
-                              目前：第 <strong className="text-purple-600 font-extrabold">{ladderSteps[pIdx]}</strong> / 10 階
-                            </span>
-                            
-                            {hasFinished && (
-                              <span className="text-xs bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-full block mx-auto mt-2 animate-bounce">
-                                👑 成功登頂 Completed!
-                              </span>
-                            )}
-                          </div>
-
-                          {/* LADDER GRAPH (Floor 10 down to floor 0) */}
-                          <div className="w-full bg-slate-50 rounded-2xl my-4 relative overflow-hidden flex flex-col justify-between p-2 border border-dashed border-slate-200 h-64">
-                            
-                            {/* Structural parallel wood rails */}
-                            <div className="absolute left-1/4 top-0 bottom-0 w-1.5 bg-amber-800/20" />
-                            <div className="absolute right-1/4 top-0 bottom-0 w-1.5 bg-amber-800/20" />
-
-                            {Array.from({ length: 11 }).map((_, fIdx) => {
-                              const floorNum = 10 - fIdx;
-                              const isCurrentClimberAt = ladderSteps[pIdx] === floorNum;
-                              
-                              return (
-                                <div key={floorNum} className="relative w-full h-5 flex items-center justify-center shrink-0">
-                                  {/* Wood rungs bar */}
-                                  <div className="absolute left-[24%] right-[24%] h-1 bg-amber-800/40 rounded-full" />
-                                  
-                                  <span className="absolute left-1 text-[8px] font-mono text-slate-300">
-                                    F{floorNum}
-                                  </span>
-
-                                  {/* Climber avatar layout */}
-                                  <AnimatePresence>
-                                    {isCurrentClimberAt && (
-                                      <motion.div
-                                        initial={{ scale: 0, y: 10 }}
-                                        animate={{ scale: 1.25, y: 0 }}
-                                        exit={{ scale: 0 }}
-                                        className="absolute z-10 w-6 h-6 rounded-full shadow-md flex items-center justify-center text-sm font-bold bg-white border border-slate-200 animate-pulse"
-                                      >
-                                        {player.emoji}
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </div>
-                              );
-                            })}
-
-                          </div>
-
-                          {/* Footer and Interactive Answers Block for EACH player */}
-                          <div className="w-full space-y-3">
-                            <div className="text-center font-mono text-[11px] text-slate-400">
-                              解答進度: {ladderQuestionIndex[pIdx]} / 10 題
-                              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-1 select-none pointer-events-none">
-                                <div 
-                                  className={`${player.color} h-full transition-all duration-300`}
-                                  style={{ width: `${(ladderQuestionIndex[pIdx] / 10) * 100}%` }}
-                                />
-                              </div>
-                            </div>
-
-                            {/* Active Question Box beneath ladder for this particular climber */}
-                            {!hasFinished && activeQuiz ? (
-                              <div className="bg-purple-50/70 border border-purple-100 p-2.5 rounded-2xl w-full text-center space-y-2">
-                                <span className="text-[10px] font-extrabold text-purple-600 block leading-none">
-                                  請找出中文對應單字：
-                                </span>
-                                <h4 className="text-base font-cute font-bold text-blue-900 line-clamp-1 truncate">
-                                  {activeQuiz.chinesePrompt}
-                                </h4>
-
-                                {/* 3 choice buttons specifically for this player */}
-                                <div className="grid grid-cols-1 gap-1 pt-1">
-                                  {activeQuiz.choices.map((option, idx) => (
-                                    <motion.button
-                                      key={option}
-                                      whileHover={{ scale: 1.02 }}
-                                      whileTap={{ scale: 0.98 }}
-                                      onClick={() => handleAnswerLadderQuizSync(pIdx, idx)}
-                                      className="bg-white hover:bg-purple-100 border border-slate-200 rounded-xl py-1 px-1.5 text-center text-[11px] font-cute font-bold text-slate-800 hover:text-purple-950 cursor-pointer shadow-sm transition-all flex items-center justify-center"
-                                    >
-                                      {option}
-                                    </motion.button>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-center text-xs font-bold text-emerald-800">
-                                ⭐ 任務完成！<br />順利過關！
-                              </div>
-                            )}
-                          </div>
-
-                        </div>
-                      );
-                    })}
+                          {num === 1 ? "👤 單人挑戰 (1-Player)" : num === 2 ? "👥 雙人對決 (2-Player)" : "🏰 四人同步 (4-Player)"}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+
+                  {/* LADDERS CONTAINER WITH INTEGRATED INDEPENDENT ANSWER CONTROLS */}
+                  {ladderPlayerCount === 1 ? (
+                    <div className="grid gap-4 bg-slate-50 p-4 rounded-[32px] border border-slate-100 grid-cols-1 max-w-2xl md:max-w-4xl mx-auto w-full">
+                      {ladderPlayers.slice(0, 1).map((player, pIdx) => {
+                        const hasFinished = ladderSteps[pIdx] === 10 || ladderQuestionIndex[pIdx] === 10;
+                        const activeQuiz = activeLadderQuizzes[pIdx];
+                        
+                        return (
+                          <div 
+                            key={player.name}
+                            className={`grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-white p-6 md:p-8 rounded-[32px] border-2 transition-all shadow-sm relative ${
+                              hasFinished 
+                                ? "border-emerald-250 bg-emerald-50/10" 
+                                : "border-slate-100 hover:border-purple-250"
+                            }`}
+                          >
+                            {/* Left Side: Climbing Ladder Graph (Column Span 5) */}
+                            <div className="md:col-span-5 flex flex-col items-center border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6">
+                              <span className="text-xs bg-slate-100 text-slate-500 font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-4 font-mono">
+                                🧗 CLIMBING HEIGHT 攀爬高度
+                              </span>
+                              
+                              <div className="w-full max-w-[220px] bg-slate-50/70 rounded-[24px] relative overflow-hidden flex flex-col justify-between p-3 border border-dashed border-slate-200 h-80 shadow-inner">
+                                {/* Structural parallel wood rails */}
+                                <div className="absolute left-[30%] top-0 bottom-0 w-1.5 bg-amber-800/10" />
+                                <div className="absolute right-[30%] top-0 bottom-0 w-1.5 bg-amber-800/10" />
+
+                                {Array.from({ length: 11 }).map((_, fIdx) => {
+                                  const floorNum = 10 - fIdx;
+                                  const isCurrentClimberAt = ladderSteps[pIdx] === floorNum;
+                                  
+                                  return (
+                                    <div key={floorNum} className="relative w-full h-5 flex items-center justify-center shrink-0">
+                                      {/* Wood rungs bar */}
+                                      <div className="absolute left-[29%] right-[29%] h-1 bg-amber-800/25 rounded-full" />
+                                      
+                                      <span className="absolute left-2 text-[10px] font-mono font-bold text-slate-400">
+                                        F{floorNum}
+                                      </span>
+
+                                      {/* Climber avatar layout */}
+                                      <AnimatePresence>
+                                        {isCurrentClimberAt && (
+                                          <motion.div
+                                            initial={{ scale: 0, y: 10 }}
+                                            animate={{ scale: 1.35, y: 0 }}
+                                            exit={{ scale: 0 }}
+                                            className="absolute z-10 w-7 h-7 rounded-full shadow-lg flex items-center justify-center text-sm font-bold bg-white border border-purple-200 animate-pulse font-mono"
+                                          >
+                                            {player.emoji}
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Right Side: Quiz, progress bars and labels (Column Span 7) */}
+                            <div className="md:col-span-7 space-y-5">
+                              <div>
+                                <span className="text-xs bg-purple-100 text-purple-700 font-extrabold px-3 py-1.5 rounded-full">
+                                  🎮 單人挑戰模式 (Single Player Challenge)
+                                </span>
+                                <div className="flex items-center gap-2 mt-4">
+                                  <span className="text-3xl select-none">{player.emoji}</span>
+                                  <span className="text-2xl font-cute font-black text-slate-800">{player.name}</span>
+                                </div>
+                                <span className="text-sm font-sans font-medium text-slate-500 mt-2 block">
+                                  當前位置：第 <strong className="text-purple-600 font-black text-xl font-mono">{ladderSteps[pIdx]}</strong> / 10 階
+                                </span>
+                                
+                                {hasFinished && (
+                                  <span className="inline-block text-sm bg-emerald-100 text-emerald-800 font-black px-4 py-1.5 rounded-full mt-3 animate-bounce shadow-sm">
+                                    👑 恭喜你順利攀爬到最頂樓 (Floor 10)！
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="border-t border-dashed border-slate-100 pt-4">
+                                <div className="text-left font-mono text-xs text-slate-500">
+                                  答題進度: <strong className="font-extrabold text-slate-800">{ladderQuestionIndex[pIdx]}</strong> / 10 題
+                                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mt-1.5 select-none pointer-events-none">
+                                    <div 
+                                      className={`${player.color} h-full transition-all duration-300`}
+                                      style={{ width: `${(ladderQuestionIndex[pIdx] / 10) * 100}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Active Question Box for single player */}
+                              {!hasFinished && activeQuiz ? (
+                                <div className="bg-purple-50/70 border border-purple-100 p-5 rounded-[24px] w-full text-center space-y-4 shadow-sm">
+                                  <span className="text-xs font-extrabold text-purple-600 bg-white/80 border border-purple-100 px-3 py-1 rounded-full inline-block leading-none">
+                                    請找出與英文單字對應的中文：
+                                  </span>
+                                  <div className="py-1">
+                                    <h4 className="text-lg md:text-xl font-cute font-black text-blue-900 tracking-wide leading-relaxed">
+                                      {activeQuiz.chinesePrompt}
+                                    </h4>
+                                  </div>
+
+                                  {/* 3 choice buttons */}
+                                  <div className="grid grid-cols-1 gap-2 pt-1">
+                                    {activeQuiz.choices.map((option, idx) => (
+                                      <motion.button
+                                        key={option}
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.99 }}
+                                        onClick={() => handleAnswerLadderQuizSync(pIdx, idx)}
+                                        className="bg-white hover:bg-purple-100 hover:text-purple-950 border border-slate-200 hover:border-purple-300 rounded-2xl py-3 px-4 text-center text-sm md:text-base font-cute font-extrabold text-slate-800 cursor-pointer shadow-sm transition-all flex items-center gap-3"
+                                      >
+                                        <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-black text-xs flex items-center justify-center shrink-0">
+                                          {String.fromCharCode(65 + idx)}
+                                        </span>
+                                        <span className="text-left leading-tight">{option}</span>
+                                      </motion.button>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="p-6 bg-emerald-50 rounded-[24px] border border-emerald-100 text-center text-sm font-bold text-emerald-800 flex flex-col items-center justify-center gap-2">
+                                  <span className="text-4xl animate-pulse">⭐</span>
+                                  <span className="text-base font-black">挑戰圓滿完成！</span>
+                                  <span className="text-xs text-emerald-600">你順利攀爬到頂端囉！真是太厲害了 🧙‍♂️✨</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* MULTI-PLAYER HORIZONTAL TIGHT RIVALRY LAYOUT */
+                    <div className="space-y-6 w-full max-w-7xl mx-auto">
+                      
+                      {/* Top: Shared 16:9 Horizontal Magic Climbing Board */}
+                      <div className="w-full max-w-5xl mx-auto bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 rounded-[32px] p-4 md:p-6 text-white border-4 border-indigo-900 shadow-xl relative overflow-hidden select-none">
+                        {/* Castle & Forest Decorative Emojis */}
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-7xl md:text-8xl opacity-15 pointer-events-none">🏰</div>
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-6xl md:text-7xl opacity-10 pointer-events-none">🌲</div>
+                        
+                        <div className="text-center w-full pb-3 border-b border-white/10 mb-4 flex items-center justify-between px-2 relative z-10">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">🏰</span>
+                            <div className="text-left">
+                              <h4 className="text-sm md:text-base font-cute font-black text-indigo-200 leading-none">
+                                仙境城堡同步攀登賽 (Horizontal Run)
+                              </h4>
+                              <span className="text-[10px] text-indigo-300 font-sans tracking-wide block mt-1">
+                                {ladderPlayerCount === 2 ? "👥 雙人魔法對抗賽" : "🏰 四人同步衝頂賽"}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-xs bg-indigo-800/80 px-3 py-1 rounded-full text-indigo-100 font-mono tracking-wider font-extrabold shadow-inner">
+                            🎯 終點：F10 城堡
+                          </span>
+                        </div>
+
+                        {/* Horizontal Lanes Tracks */}
+                        <div className="space-y-4 md:space-y-5 my-2 relative z-10">
+                          {ladderPlayers.slice(0, ladderPlayerCount).map((player, pIdx) => {
+                            const currentStep = ladderSteps[pIdx];
+                            
+                            return (
+                              <div key={`track-${player.name}`} className="relative h-12 md:h-14 flex items-center group">
+                                {/* Lane Player Tag Label */}
+                                <div className="w-24 md:w-28 shrink-0 flex items-center gap-2 z-20">
+                                  <motion.div 
+                                    className="w-8 h-8 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center shadow-inner relative"
+                                    whileHover={{ scale: 1.1 }}
+                                  >
+                                    <span className="text-base select-none">{player.emoji}</span>
+                                  </motion.div>
+                                  <div className="truncate text-left leading-none">
+                                    <span className="text-[11px] md:text-xs font-black block text-slate-100 font-cute truncate">{player.name.split(" ")[0]}</span>
+                                    <span className="text-[9px] font-mono font-bold text-indigo-300 mt-1 block">Level {currentStep}/10</span>
+                                  </div>
+                                </div>
+
+                                {/* Horizontal track lane with gold milestones */}
+                                <div className="flex-grow h-1.5 bg-white/10 rounded-full relative mx-4">
+                                  {/* Progress highlight segment */}
+                                  <div 
+                                    className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-400 shadow-[0_0_12px_rgba(168,85,247,0.6)] transition-all duration-705 ease-out"
+                                    style={{ width: `${(currentStep / 10) * 100}%` }}
+                                  />
+
+                                  {/* Milestone rungs (0 to 10) */}
+                                  {Array.from({ length: 11 }).map((_, stepIdx) => {
+                                    const stepPercent = (stepIdx / 10) * 100;
+                                    const isReached = currentStep >= stepIdx;
+                                    const isGoal = stepIdx === 10;
+                                    
+                                    return (
+                                      <div 
+                                        key={`rung-${pIdx}-${stepIdx}`}
+                                        className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 flex flex-col items-center select-none"
+                                        style={{ left: `${stepPercent}%` }}
+                                      >
+                                        <div className={`w-1 h-3 rounded-full transition-all ${
+                                          isReached 
+                                            ? "bg-amber-300 shadow-[0_0_6px_#f59e0b] h-3.5" 
+                                            : isGoal 
+                                              ? "bg-yellow-400 w-1.5 h-4 shadow-[0_0_10px_#fbbf24]" 
+                                              : "bg-white/20"
+                                        }`} />
+                                        <span className={`text-[8px] font-mono font-bold mt-1 scale-90 ${
+                                          isReached ? "text-amber-300 font-extrabold" : "text-white/30"
+                                        }`}>
+                                          {isGoal ? "🏰" : `F${stepIdx}`}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+
+                                  {/* Character Avatar Icon sliding horizontally */}
+                                  <div 
+                                    className="absolute -translate-y-1/2 top-1/2 -ml-4 z-10 transition-all duration-700 ease-out flex flex-col items-center"
+                                    style={{ left: `${(currentStep / 10) * 100}%` }}
+                                  >
+                                    <motion.div
+                                      layout
+                                      initial={{ scale: 0.9 }}
+                                      animate={{ scale: [1, 1.2, 1], y: [0, -6, 0] }}
+                                      transition={{ type: "spring", stiffness: 120, damping: 10 }}
+                                      className="w-8 h-8 md:w-9 md:h-9 rounded-full shadow-lg bg-white border-2 border-purple-500 flex items-center justify-center text-lg md:text-xl font-cute relative"
+                                    >
+                                      <span className="select-none">{player.emoji}</span>
+                                      {currentStep === 10 && (
+                                        <span className="absolute -top-3.5 text-xs animate-bounce">👑</span>
+                                      )}
+                                    </motion.div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Bottom Parallel Row of Question Cards (Arranged side-by-side horizontally) */}
+                      <div className={`grid gap-4 w-full mx-auto ${
+                        ladderPlayerCount === 2 
+                          ? "max-w-5xl grid-cols-1 md:grid-cols-2" 
+                          : "max-w-7xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                      }`}>
+                        {ladderPlayers.slice(0, ladderPlayerCount).map((player, pIdx) => {
+                          const hasFinished = ladderSteps[pIdx] === 10 || ladderQuestionIndex[pIdx] === 10;
+                          const activeQuiz = activeLadderQuizzes[pIdx];
+
+                          return (
+                            <div 
+                              key={`pcard-${player.name}`} 
+                              className={`flex flex-col justify-between items-center bg-white p-5 rounded-3xl border-2 transition-all min-h-[350px] shadow-sm relative ${
+                                hasFinished 
+                                  ? "border-emerald-250 bg-emerald-50/10" 
+                                  : "border-slate-100 hover:border-purple-250"
+                              }`}
+                            >
+                              {/* Card Header Info */}
+                              <div className="text-center w-full pb-2.5 border-b border-dashed border-slate-100">
+                                <span className={`text-[10px] font-extrabold px-3 py-0.5 rounded-full text-white ${player.color} inline-block shadow-sm`}>
+                                  Player {pIdx + 1}
+                                </span>
+                                <div className="flex items-center justify-center gap-1.5 mt-2">
+                                  <span className="text-lg select-none">{player.emoji}</span>
+                                  <span className="text-sm font-black text-slate-800 font-cute">{player.name}</span>
+                                </div>
+                                <div className="flex items-center justify-center gap-1.5 mt-1">
+                                  <span className="text-[11px] text-slate-400">當前位置：</span>
+                                  <strong className="text-purple-600 font-black text-xs font-mono">Floor {ladderSteps[pIdx]} / 10</strong>
+                                </div>
+                                
+                                {hasFinished && (
+                                  <span className="text-[10px] bg-emerald-100 text-emerald-800 font-black px-2.5 py-0.5 rounded-full inline-block mt-1.5 animate-pulse">
+                                    👑 順利完賽 Completed!
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Progress of this player */}
+                              <div className="w-full py-3 px-1">
+                                <div className="text-left font-mono text-[10px] text-slate-400 flex items-center justify-between">
+                                  <span>任務解答數:</span>
+                                  <strong className="text-slate-700">{ladderQuestionIndex[pIdx]} / 10 題</strong>
+                                </div>
+                                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1 select-none pointer-events-none">
+                                  <div 
+                                    className={`${player.color} h-full transition-all duration-300`}
+                                    style={{ width: `${(ladderQuestionIndex[pIdx] / 10) * 100}%` }}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Quiz choices and active box */}
+                              <div className="w-full flex-grow flex flex-col justify-center my-1">
+                                {!hasFinished && activeQuiz ? (
+                                  <div className="bg-purple-50/50 border border-purple-100 p-2.5 rounded-2xl w-full text-center space-y-2.5 shadow-inner">
+                                    <span className="text-[10px] font-bold text-purple-600 bg-white/95 px-2 py-0.5 rounded-full inline-block">
+                                      請找出正確的中文：
+                                    </span>
+                                    <h4 className="text-xs font-cute font-extrabold text-blue-900 leading-snug line-clamp-2 min-h-[38px] flex items-center justify-center px-1">
+                                      {activeQuiz.chinesePrompt}
+                                    </h4>
+
+                                    {/* 3 candidate options */}
+                                    <div className="grid grid-cols-1 gap-1.5 pt-0.5">
+                                      {activeQuiz.choices.map((option, idx) => (
+                                        <motion.button
+                                          key={option}
+                                          whileHover={{ scale: 1.01 }}
+                                          whileTap={{ scale: 0.99 }}
+                                          onClick={() => handleAnswerLadderQuizSync(pIdx, idx)}
+                                          className="bg-white hover:bg-purple-100 border border-slate-200 rounded-xl py-1.5 px-2.5 text-left text-xs font-cute font-bold text-slate-800 hover:text-purple-950 cursor-pointer shadow-sm transition-all flex items-center gap-1.5 min-w-0"
+                                        >
+                                          <span className="w-4 h-4 rounded-full bg-slate-100 text-slate-500 text-[9px] font-black flex items-center justify-center shrink-0">
+                                            {String.fromCharCode(65 + idx)}
+                                          </span>
+                                          <span className="truncate leading-tight text-left block w-full">{option}</span>
+                                        </motion.button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-center text-[11px] font-bold text-emerald-800 flex flex-col items-center justify-center gap-1 py-4">
+                                    <span className="text-2xl animate-spin-slow">⭐</span>
+                                    <span className="font-extrabold text-emerald-900">任務順利達標！</span>
+                                    <span className="text-[10px] text-emerald-600">抵達等級 {ladderSteps[pIdx]} 🥳</span>
+                                  </div>
+                                )}
+                              </div>
+
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                    </div>
+                  )}
 
                   {/* SUMMARY / RESULTS REPORT ON COMPLETED */}
                   {ladderGameCompleted && (
@@ -1228,9 +1484,11 @@ export default function App() {
                       </div>
                       
                       <div className="space-y-2">
-                        <h4 className="text-3xl md:text-4xl font-cute font-bold">🧗 4人登頂大挑戰全體通關！</h4>
+                        <h4 className="text-3xl md:text-4xl font-cute font-bold">
+                          🧗 {ladderPlayerCount === 1 ? "單人" : ladderPlayerCount === 2 ? "雙人" : "四人"}登頂大挑戰挑戰成功！
+                        </h4>
                         <p className="text-slate-100 text-base">
-                          恭喜大家！作答挑戰圓滿結束，各小巫師的最後成績排行榜如下：
+                          恭喜！作答挑戰圓滿結束，最後的攀爬成績排行榜如下：
                         </p>
                       </div>
 
