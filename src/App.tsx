@@ -1358,9 +1358,9 @@ export default function App() {
                                   >
                                     <motion.div
                                       layout
-                                      initial={{ scale: 0.9 }}
+                                      initial={{ scale: 0.9, y: 0 }}
                                       animate={{ scale: [1, 1.2, 1], y: [0, -6, 0] }}
-                                      transition={{ type: "spring", stiffness: 120, damping: 10 }}
+                                      transition={{ duration: 0.6, ease: "easeInOut" }}
                                       className="w-8 h-8 md:w-9 md:h-9 rounded-full shadow-lg bg-white border-2 border-purple-500 flex items-center justify-center text-lg md:text-xl font-cute relative"
                                     >
                                       <span className="select-none">{player.emoji}</span>
