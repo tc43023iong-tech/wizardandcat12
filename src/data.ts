@@ -282,8 +282,8 @@ export const STORY_SECTIONS: StorySection[] = [
     illustrationPrompt: "A cute gray cat peeking from behind a beautiful castle tower, waving its paw gently at a young red-haired wizard.",
     vocabulary: [
       {
-        word: "hiding",
-        phonetic: "/ˈhaɪdɪŋ/",
+        word: "hide",
+        phonetic: "/haɪd/",
         translation: "躲藏 🫣",
         chineseOnly: "躲藏",
         example: "The grey kitten is hiding inside a small cardboard box.",

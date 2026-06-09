@@ -42,6 +42,7 @@ interface SparkleClick {
 const getInflectionPattern = (word: string): string => {
   const w = word.toLowerCase();
   if (w === "wake") return "\\b(wake|woke)\\b";
+  if (w === "hide") return "\\b(hide|hiding|hid|hidden|hides)\\b";
   if (w === "drop") return "\\b(drop|dropped|dropping|drops)\\b";
   if (w === "throw in") return "\\b(throw(\\s+sub)?\\s*in|thrown(\\s+sub)?\\s*in|throws(\\s+sub)?\\s*in|throwing(\\s+sub)?\\s*in|thrown)\\b";
   if (w === "hurry") return "\\b(hurry|hurried|hurries|hurrying)\\b";
@@ -234,10 +235,10 @@ export default function App() {
 
   // Ladder Game (爬爬梯) States
   const ladderPlayers = [
-    { name: "湯姆 🧙‍♂️", emoji: "🧙‍♂️", color: "bg-blue-500", ringColor: "ring-blue-100" },
-    { name: "灰灰 🐱", emoji: "🐱", color: "bg-amber-500", ringColor: "ring-amber-100" },
-    { name: "公主 👸", emoji: "👸", color: "bg-pink-500", ringColor: "ring-pink-100" },
-    { name: "鱷魚 🐊", emoji: "🐊", color: "bg-emerald-500", ringColor: "ring-emerald-100" }
+    { name: "Tom 🧙‍♂️", emoji: "🧙‍♂️", color: "bg-blue-500", ringColor: "ring-blue-100" },
+    { name: "Cat 🐱", emoji: "🐱", color: "bg-amber-500", ringColor: "ring-amber-100" },
+    { name: "Princess 👸", emoji: "👸", color: "bg-pink-500", ringColor: "ring-pink-100" },
+    { name: "Crocodile 🐊", emoji: "🐊", color: "bg-emerald-500", ringColor: "ring-emerald-100" }
   ];
   const [ladderSteps, setLadderSteps] = useState<number[]>([0, 0, 0, 0]); // positions on ladder (0 to 10)
   const [ladderQuestionIndex, setLadderQuestionIndex] = useState<number[]>([0, 0, 0, 0]); // how many questions asked (up to 10)
@@ -315,15 +316,15 @@ export default function App() {
 
   const handleSelectOption = (idx: number) => {
     if (isAnswerRevealed[currentPage]) return;
+    
+    // Set the selected answer state
     setSelectedAnswers(prev => ({
       ...prev,
       [currentPage]: idx
     }));
-    soundEffects.playMagicChime();
-  };
 
-  const handleRevealAnswer = () => {
-    const isCorrect = selectedAnswers[currentPage] === currentSection.qa.answerIndex;
+    // Immediately calculate and trigger the reveal state
+    const isCorrect = idx === STORY_SECTIONS[currentPage].qa.answerIndex;
     setIsAnswerRevealed(prev => ({
       ...prev,
       [currentPage]: true
@@ -333,6 +334,7 @@ export default function App() {
       [currentPage]: isCorrect
     }));
 
+    // Play appropriate reaction sounds
     if (isCorrect) {
       soundEffects.playCorrectAnswer();
     } else {
@@ -407,6 +409,7 @@ export default function App() {
 
         const exactWord = remainingText.substring(foundIndex, foundIndex + matchedLength);
         const finalVocab = matchedVocab;
+        const isExcludedChinese = ["wizard", "palace", "happily", "everyone"].includes(finalVocab.word.toLowerCase());
 
         elements.push(
           <button
@@ -420,9 +423,11 @@ export default function App() {
             className="vocab-orange inline-flex items-center gap-1 mx-1.5 px-2 py-0.5 rounded-xl border border-orange-200 bg-orange-50/80 hover:bg-orange-100/90 text-2xl font-black shadow-sm"
           >
             {exactWord}
-            <span className="text-sm font-sans font-medium text-slate-500 bg-white px-1.5 py-0.5 rounded-md border border-slate-100">
-              {finalVocab.chineseOnly}
-            </span>
+            {!isExcludedChinese && (
+              <span className="text-sm font-sans font-medium text-slate-500 bg-white px-1.5 py-0.5 rounded-md border border-slate-100">
+                {finalVocab.chineseOnly}
+              </span>
+            )}
           </button>
         );
 
@@ -962,20 +967,9 @@ export default function App() {
                             </div>
                           </motion.div>
                         ) : (
-                          /* Interactive green button on click check */
-                          <motion.button
-                            onClick={handleRevealAnswer}
-                            disabled={selectedAnswers[currentPage] === undefined}
-                            whileHover={{ scale: selectedAnswers[currentPage] !== undefined ? 1.02 : 1 }}
-                            whileTap={{ scale: selectedAnswers[currentPage] !== undefined ? 0.98 : 1 }}
-                            className={`w-full font-black text-lg tracking-wider text-center flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 ${
-                              selectedAnswers[currentPage] !== undefined
-                                ? "btn-answer-3d"
-                                : "bg-slate-100 text-slate-400 cursor-not-allowed border-2 border-slate-200 rounded-[999px] py-3.5"
-                            }`}
-                          >
-                            <span>點擊綠色按鈕看答案 🌟</span>
-                          </motion.button>
+                          <div className="w-full text-center py-4 bg-slate-50 border border-slate-200 rounded-3xl text-slate-500 font-bold text-sm tracking-wide animate-pulse flex items-center justify-center gap-2">
+                            <span>💡 請點擊上方任一選項，系統將會自動批改答案哦！</span>
+                          </div>
                         )}
                       </AnimatePresence>
                     </div>
