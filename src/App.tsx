@@ -410,7 +410,7 @@ export default function App() {
 
         const exactWord = remainingText.substring(foundIndex, foundIndex + matchedLength);
         const finalVocab = matchedVocab;
-        const isExcludedChinese = ["wizard", "palace", "happily", "everyone"].includes(finalVocab.word.toLowerCase());
+        const isExcludedChinese = ["wizard", "palace", "happily", "everyone", "crocodile", "wand", "clap", "clapped"].includes(finalVocab.word.toLowerCase());
 
         elements.push(
           <button

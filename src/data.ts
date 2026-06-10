@@ -195,14 +195,14 @@ export const STORY_SECTIONS: StorySection[] = [
       }
     ],
     qa: {
-      questionEng: "What did the crocodile swim away with?",
+      questionEng: "What did the crocodile 🐊 swim away with?",
       choices: [
-        "A juicy fish",
-        "The golden crown",
-        "A book bag"
+        "A fish",
+        "The crown 👑",
+        "A book"
       ],
       answerIndex: 1,
-      explanationEng: "The crocodile swam away with the princess' gold crown.",
+      explanationEng: "The crocodile 🐊 swam away with the princess' gold crown 👑.",
       explanationZht: "鱷魚帶著「the crown」（金色皇冠）游走了。"
     }
   },
@@ -490,8 +490,8 @@ export const STORY_SECTIONS: StorySection[] = [
       questionEng: "What did Cat catch in the moat?",
       choices: [
         "A heavy boot",
-        "The golden crown",
-        "A giant pink sea star"
+        "The crown",
+        "A book"
       ],
       answerIndex: 1,
       explanationEng: "Instead of fish, Cat caught the royal crown on her line.",
@@ -534,9 +534,9 @@ export const STORY_SECTIONS: StorySection[] = [
     qa: {
       questionEng: "Where did Tom hide the crown?",
       choices: [
-        "In his purple robe",
-        "Behind the green tree",
-        "Inside a treasure box"
+        "Tom's robe",
+        "Behind the tree",
+        "In a bag"
       ],
       answerIndex: 0,
       explanationEng: "Tom hid the crown inside his wizard robe to keep it safe.",
@@ -578,8 +578,8 @@ export const STORY_SECTIONS: StorySection[] = [
     qa: {
       questionEng: "How did the princess feel when she got her crown back?",
       choices: [
-        "Angry and sleepy",
-        "Happily surprised!",
+        "Angry",
+        "Happy and surprised",
         "Sad and hungry"
       ],
       answerIndex: 1,
